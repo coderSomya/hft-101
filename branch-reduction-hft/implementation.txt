@@ -1,0 +1,2 @@
+Naive (with branching) version latency: 2800 microseconds
+Optimized (branchless) version latency: 1400 microseconds

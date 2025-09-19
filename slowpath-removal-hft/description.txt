@@ -1,0 +1,68 @@
+
+---
+
+## 🐢 File 2: `slowpath_removal_naive.cpp`
+
+```cpp
+// slowpath_removal_naive.cpp
+// Naive version: error handling (slowpath) inline with main logic
+
+#include <iostream>
+#include <vector>
+#include <chrono>
+#include <random>
+#include <stdexcept>
+
+const size_t N = 1 << 20; // 1M iterations
+
+// Simulate memory allocation with rare failure
+void* allocate_memory_naive(size_t size, bool& success) {
+    // Simulate 0.001% failure rate
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    static std::uniform_int_distribution<int> dist(1, 100000);
+
+    if (dist(gen) == 1) {
+        success = false;
+        return nullptr; // Simulate allocation failure (slowpath)
+    }
+
+    success = true;
+    return new char[size]; // Simulate successful allocation (hotpath)
+}
+
+int main() {
+    std::vector<void*> allocations;
+    allocations.reserve(N);
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    for (size_t i = 0; i < N; ++i) {
+        bool success;
+        void* ptr = allocate_memory_naive(64, success);
+
+        if (!success) {
+            // SLOWPATH: Handle out-of-memory (rare)
+            std::cerr << "Allocation failed at iteration " << i << "\n";
+            continue; // Skip — in real code, you might throw or retry
+        }
+
+        allocations.push_back(ptr);
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    // Prevent optimization
+    volatile size_t result = allocations.size();
+    (void)result;
+
+    std::cout << "Naive (slowpath inline) version latency: " << duration.count() << " microseconds\n";
+
+    // Cleanup
+    for (void* ptr : allocations) {
+        delete[] static_cast<char*>(ptr);
+    }
+
+    return 0;
+}

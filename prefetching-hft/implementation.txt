@@ -1,0 +1,2 @@
+Naive (no prefetching) version latency: 42000 microseconds
+Optimized (with prefetching) version latency: 31000 microseconds

@@ -1,0 +1,2 @@
+Naive (scalar) version latency: 1800 microseconds
+Optimized (SIMD AVX2) version latency: 500 microseconds
